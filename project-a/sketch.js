@@ -21,9 +21,10 @@ let trashX, trashY;
 
 
 function setup() {
-    createCanvas(800, 500);
+    let canvas = createCanvas(800, 500);
     canvas.id("p5-canvas");
     canvas.parent("p5-canvas-container");
+
     bubbleX = random(100, 800);
     bubbleY = 500;
     speed = 0.002;
