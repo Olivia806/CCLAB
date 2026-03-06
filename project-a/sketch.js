@@ -1,15 +1,23 @@
-/*
-Template for IMA's Creative Coding Lab 
-
-Project A: Generative Creatures
-CCLaboratories Biodiversity Atlas 
-*/
-
-let x;
-let y;
-let R = 100;
-let vNumber = 200;
-let smoothness = 0.5;
+//background parameter
+let s = 5;
+let d;
+let x, y;
+let x2, y2, w;
+//fish parameter
+let FishX, FishY;
+let currentSize = 0.2;
+let maxSize = 1;
+let minSize = 0.2;
+let speed;
+let ax = 2;
+let ay = 3;
+//bubble parameter
+let bubbleX, bubbleY;
+//scared parameter
+let scaredStartTime = 0;
+let FishisScared = false;
+//trash parameter
+let trashX, trashY;
 
 function setup() {
     let canvas = createCanvas(800, 500);
