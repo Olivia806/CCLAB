@@ -9,8 +9,11 @@ let currentSize = 0.2;
 let maxSize = 1;
 let minSize = 0.2;
 let speed;
-let ax = 2;
-let ay = 3;
+let noiseX = 0;
+let noiseY = 500;
+let rushX = 0;
+let rushY = 0;
+let movement;
 //bubble parameter
 let bubbleX, bubbleY;
 //scared parameter
@@ -19,99 +22,142 @@ let FishisScared = false;
 //trash parameter
 let trashX, trashY;
 
-
 function setup() {
     let canvas = createCanvas(800, 500);
     canvas.id("p5-canvas");
     canvas.parent("p5-canvas-container");
-
     bubbleX = random(100, 800);
     bubbleY = 500;
-    speed = 0.002;
+    speed = 0.005;
     trashX = random(100, 700);
     trashY = random(200, 400);
-    FishX = random(0, 800);
-    FishY = random(0, 500);
+    trashX2 = random(100, 700);
+    trashY2 = random(200, 400);
+    FishX = random(100, 700);
+    FishY = random(100, 400);
+    bubbleFeed = false;
 }
 
 function draw() {
     background(220);
     drawBackground();
-    //fish initial size
+
+    //fish initial grow 
     currentSize += 0.0001;
+
     //trash
+    push();
     trashXn = trashX + sin(frameCount * 0.02) * 15;
     trashYn = trashY + cos(frameCount * 0.03) * 10;
     let dMoTr = dist(mouseX, mouseY, trashXn, trashYn);
-
-    if (dMoTr < 70) {
-        fill("red");
-    } else {
-        fill(7, 50, 135);
-    }
+    fill(dMoTr < 70 ? "red" : color(7, 50, 135));
     drawTrash(trashXn, trashYn, 1);
+    pop();
+
+    //trash
+    push();
+    trashXn2 = trashX2 + sin(frameCount * 0.02) * 15;
+    trashYn2 = trashY2 + cos(frameCount * 0.03) * 10;
+    let dMoTr2 = dist(mouseX, mouseY, trashXn2, trashYn2);
+    fill(dMoTr2 < 70 ? "red" : color(7, 50, 135));
+    drawTrash(trashXn2, trashYn2, 1);
+    pop();
+
+    //trash hurt fish
     let dFiTr = dist(FishX, FishY, trashXn, trashYn);
     if (dFiTr < 40) {
-        currentSize -= 0.05;
-        if (currentSize < minSize) {
-            currentSize = minSize;
-        }
+        currentSize = max(currentSize - 0.05, minSize);
         trashX = random(100, 700);
         trashY = random(100, 400);
     }
+    let dFiTr2 = dist(FishX, FishY, trashXn2, trashYn2);
+    if (dFiTr2 < 40) {
+        currentSize = max(currentSize - 0.05, minSize);
+        trashX2 = random(100, 700);
+        trashY2 = random(100, 400);
+    }
+
     //fish scared
     let dMoFi = dist(mouseX, mouseY, FishX, FishY);
-    if (dMoFi < 50) {
-        if (scaredStartTime == 0) {
-            scaredStartTime = frameCount;
-            FishisScared = true;
-        }
-    }
-    //fish speedup
-    if (scaredStartTime != 0) {
-        speed = 0.008;
+    if (dMoFi < 50 && scaredStartTime === 0) {
+        scaredStartTime = frameCount;
+        FishisScared = true;
     }
 
-    if (frameCount - scaredStartTime > 60 * 2) {
+    //swim fast
+    if (scaredStartTime !== 0) {
+        speed = 0.02;
+    }
+
+    //not scared
+    if (scaredStartTime !== 0 && frameCount - scaredStartTime > 60 * 1.5) {
         scaredStartTime = 0;
         FishisScared = false;
-        speed = 0.002;
+        speed = 0.005;
+        rushX = 0;
+        rushY = 0;
     }
-    //在scared过后，并不会在原地停下来，还会刷新新的坐标 看着好奇怪
-    FishX += (noise(frameCount * speed) - 0.5) * 3 + ax
-    FishY += (noise(frameCount * speed * 2 + 900) - 0.5) * 4 + ay;
 
-    //opposite direction
-    if (FishisScared == true) {
+    //fish swim away
+    if (FishisScared) {
+
         if (mouseX < FishX) {
-            ax = 5;
+            rushX = 2.5;
         } else if (mouseX > FishX) {
-            ax = -5;
+            rushX = - 2.5;
         }
-    }
-    //turn around
+        if (mouseY < FishY) {
+            rushY = 2.5;
+        } else if (mouseY > FishY) {
+            rushY = - 2.5;
+        }
 
-    if (FishX > 790) {
-        ax = ax * -1
-        FishX = 780
-    } else if (FishX < 0) {
-        ax = ax * -1
-        FishX = 2
     }
 
-    if (FishY > 490 || FishY < 0) {
-        ay = ay * -1
+    //fish move direction
+    let direX = (noise(noiseX) - 0.5) * 2;
+    let direY = (noise(noiseY) - 0.5) * 2;
+
+    //moving scale
+    if (FishisScared) {
+        movement = 5;
+    } else {
+        movement = 2;
+    }
+
+    //fish location
+    FishX += direX * movement + rushX + 1;
+    FishY += direY * movement * 0.5 + rushY + 0.5;
+
+    //noise change
+    noiseX += speed;
+    noiseY += speed;
+
+    //bounce
+    if (FishX > 780) {
+        FishX = 780;
+        rushX = -2.5;
+    } else if (FishX < 20) {
+        FishX = 20;
+        rushX = 2.5;
+    }
+
+    if (FishY > 480) {
+        FishY = 480;
+        rushY = -1.5;
+    } else if (FishY < 20) {
+        FishY = 20;
+        rushY = 1.5;
     }
 
     drawCreature(FishX, FishY);
     //bubble natural movement
-    drawBubble(bubbleX, bubbleY);
     bubbleY = bubbleY - 1;
     let offset = sin(frameCount * 0.05) * 3;
     bubbleX = bubbleX + offset;
-    //fish eat bubble
+    drawBubble(bubbleX, bubbleY);
+    //fish eat bubble 
     let dFiBu = dist(FishX, FishY, bubbleX, bubbleY);
-
     if (dFiBu < 20) {
         //fish bigger
         currentSize += 0.1;
@@ -127,6 +173,14 @@ function draw() {
         }
     }
 
+    //feed the fish
+    if (mouseIsPressed) {
+        if (dFiBu < 300 && dFiBu > 10) {
+            bubbleX = lerp(bubbleX, FishX, 0.05);
+            bubbleY = lerp(bubbleY, FishY, 0.05);
+        }
+    }
+
     //bubble reaches margin
     if (bubbleY < 0) {
         bubbleY = height;
@@ -135,26 +189,15 @@ function draw() {
     drawTorch(mouseX - 10, mouseY + 5, 90);
 }
 
-
-
 function drawCreature(x, y) {
     push();
     translate(x, y);
     let d = dist(mouseX, mouseY, x, y);
     let fishScale = currentSize;
-    //fish speed up
-    if (mouseIsPressed == true) {
-        scale(-fishScale, fishScale);
-        speed = 0.004;
-        currentSize = currentSize - 0.001;
-        if (currentSize < minSize) {
-            currentSize = minSize;
-        }
-    } else {
-        scale(fishScale);
-    }
+    scale(fishScale);
 
-    //scared
+
+    //scared sign
     if (FishisScared == true) {
         textSize(80);
         textAlign(CENTER);
@@ -178,8 +221,85 @@ function drawBody(x, y, a, s) {
     rotate(a);
     scale(s);
     //body
-    fill(131, 102, 153); //#836699
+    push();
+    fill(131, 102, 140); //#836699
     ellipse(0, 0, 180, 140);
+    pop();
+
+    //dots
+    push();
+    for (let j = 0; j < 8; j++) {
+        let yDot = map(j, 0, 8, -55, 70);
+        let dotSize = map(sin(frameCount * 0.1 + j), -1, 1, 5, 12);
+        fill(150, 174, 217, 180);
+        circle(
+            35 + sin(map(j, 0, 8, radians(0), radians(180))) * 10,
+            yDot,
+            dotSize
+        );
+    }
+    pop();
+
+    push();
+    for (let j = 0; j < 8; j++) {
+        let yDot = map(j, 0, 8, -45, 50);
+        let dotSize = map(sin(frameCount * 0.1 + j), -1, 1, 5, 10);
+        fill(160, 181, 219, 180);
+        circle(
+            60 + sin(map(j, 0, 8, radians(0), radians(180))) * 12,
+            yDot,
+            dotSize
+        );
+    }
+    pop();
+
+    push();
+    for (let j = 0; j < 8; j++) {
+        let yDot = map(j, 0, 8, -62, 80);
+        let dotSize = map(sin(frameCount * 0.1 + j), -1, 1, 5, 12);
+        fill(140, 168, 219, 180);
+        circle(10 + sin(map(j, 0, 8, radians(0), radians(180))) * 6, yDot, dotSize);
+    }
+    pop();
+
+    push();
+    for (let j = 0; j < 8; j++) {
+        let yDot = map(j, 0, 8, -62, 80);
+        let dotSize = map(sin(frameCount * 0.1 + j), -1, 1, 5, 12);
+        fill(125, 158, 219, 180);
+        circle(
+            -10 + sin(map(j, 0, 8, radians(0), radians(180))) * -4,
+            yDot,
+            dotSize
+        );
+    }
+    pop();
+
+    push();
+    for (let j = 0; j < 8; j++) {
+        let yDot = map(j, 0, 8, -55, 70);
+        let dotSize = map(sin(frameCount * 0.1 + j), -1, 1, 5, 12);
+        fill(114, 151, 219, 180);
+        circle(
+            -35 + sin(map(j, 0, 8, radians(0), radians(180))) * -8,
+            yDot,
+            dotSize
+        );
+    }
+    pop();
+
+    push();
+    for (let j = 0; j < 8; j++) {
+        let yDot = map(j, 0, 8, -45, 50);
+        let dotSize = map(sin(frameCount * 0.1 + j), -1, 1, 5, 10);
+        fill(101, 143, 219, 180);
+        circle(-60 + sin(map(j, 0, 8, radians(0), radians(180))) * -12,
+            yDot,
+            dotSize
+        );
+    }
+    pop();
+    //
     //mouse
     push();
     fill(224, 132, 149);
@@ -320,7 +440,6 @@ function drawTail(x, y, a, s) {
     curveVertex(0, 0);
     curveVertex(0, 0);
     endShape(CLOSE);
-
     //in
     fill(210, 170, 235);
     beginShape();
@@ -335,13 +454,6 @@ function drawTail(x, y, a, s) {
 
     pop();
 }
-
-// function drawBubble(x,y,swing){
-//   push();
-//   colorMode(RGB);
-//   let bubbleX = x * 0.05 + sin(swing) * 0.5;
-//   circle(bubbleX, y, 20);
-//   pop();
 
 function drawBubble(x, y) {
     push();
@@ -359,8 +471,9 @@ function drawTrash(x, y, spd) {
     push();
     translate(x, y);
     rotate(radians(frameCount * spd));
-    noStroke();
-    square(0, 0, 20);
+    textSize(40);
+    textAlign(CENTER);
+    text("♺", 0, 0);
     pop();
 }
 
@@ -407,9 +520,9 @@ function drawBackground() {
             change = 0.5;
         }
         for (let x1 = 0; x1 < width; x1 += 10) {
-            let sineWave = sin(x1 * 0.02 + t + y1 * 0.1) * 20;
+            let sinWave = sin(x1 * 0.02 + t + y1 * 0.1) * 20;
             let noiseWave = noise(x1 * 0.01, y1 * 0.02, t) * 30;
-            let waveY = y1 + (sineWave + noiseWave) * change;
+            let waveY = y1 + (sinWave + noiseWave) * change;
             vertex(x1, waveY);
         }
         endShape();
@@ -445,4 +558,3 @@ function drawTorch(x, y, a) {
     pop();
 
 }
-
