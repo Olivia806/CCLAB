@@ -11,7 +11,7 @@ let PlantY = 400;
 
 function preload() {
   for (let i = 1; i <= 7; i++) {
-    scanned.push(loadImage("draw-" + i + ".jpg"));
+    scanned.push(loadImage("draw" + i + ".jpg"));
   }
 }
 
@@ -20,7 +20,7 @@ function setup() {
 
   eraseBg(scanned, 10);
   plant = crop(scanned, 0, 0, 490, 433);
-  rain = crop(scanned, 1543, 569, 2310, 1501);
+  rain = crop(scanned, 1500, 569, 800, 900);
   line = crop(scanned, 121, 1117, 959, 1453);
 }
 
@@ -29,13 +29,13 @@ function draw() {
 
   // examples: eye
   let dp = abs(mouseX - PlantX);
-  if (dp < 40) {
+  if (dp < 80) {
     curPlant = floor((frameCount / 20) % plant.length);
   }
 
   image(
     plant[curPlant],
-    PlantX, PlantY, 100, 50
+    PlantX, PlantY, 100, 100
   );
 
 
@@ -43,14 +43,20 @@ function draw() {
   // rain
 
   push();
-  image(rain[curRain], mouseX - 50, mouseY - 50, 100, 100);
+  image(rain[curRain], mouseX - 50, mouseY - 50, 300, 300);
   curRain = floor((frameCount / 10) % rain.length);
   pop();
 
 
   //line
+  push();
+  let r = map(noise(frameCount * 0.01), 0, 1, 100, 255);
+  let g = map(mouseX, 0, width, 0, 255);
+  let b = map(mouseY, 0, height, 0, 255);
+  tint(r, g, b);
   image(line[curLine], 50, 200, line[0].width * 0.3, line[0].height * 0.3);
   curLine = floor(map(sin(frameCount / 10), -1, 1, 0, line.length));
+  pop();
 }
 
 // You shouldn't need to modify these helper functions:
