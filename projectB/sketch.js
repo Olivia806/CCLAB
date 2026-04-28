@@ -36,7 +36,7 @@ let displayTime = 0;
 
 function preload() {
   //cam
-  handPose = ml5.handPose();
+  handPose = ml5.handPose({ flipped: true });
   //girl
   for (let i = 1; i < 3; i++) {
     let filename = 'write' + i + '.PNG';
@@ -52,7 +52,7 @@ function preload() {
 function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
-  video = createCapture(VIDEO);
+  video = createCapture(VIDEO, { flipped: true });
   video.size(640, 480);
   video.hide();
 
