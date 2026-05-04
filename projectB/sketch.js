@@ -417,7 +417,7 @@ function drawmain() {
     //play
     fill(255, 200);
     textSize(22);
-    text("Now, play the song of your lives.", width / 2, height - 80);
+    text("Now, play the song of your lives with your hands.", width / 2, height - 80);
 
     //end
     fill(255, 120);
