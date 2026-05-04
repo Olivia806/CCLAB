@@ -191,6 +191,7 @@ class Ball {
       colorMsg = this.col
       displayTime = millis() + 3000;
       visible = 0;
+      //visible = 0;
 
       this.notClick = false;
     }
