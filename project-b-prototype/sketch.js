@@ -12,10 +12,9 @@ function setup() {
   let canvas = createCanvas(800, 500);
   canvas.parent("p5-canvas-container");
   colr = [color(255, 220, 0),
-  color(100, 150, 255),
-  color(255, 80, 50),
   color(180, 255, 180),
-  color(100, 100, 255)];
+  color(100, 150, 255),
+  color(255, 80, 50),];
   //drawballs
   for (let i = 0; i < 10; i++) {
     balls.push(new Ball(colr[floor(i / 2)]));
